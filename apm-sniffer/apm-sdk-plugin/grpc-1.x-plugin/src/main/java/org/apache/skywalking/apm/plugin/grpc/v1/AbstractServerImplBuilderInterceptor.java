@@ -35,7 +35,7 @@ public class AbstractServerImplBuilderInterceptor implements InstanceMethodsArou
     @Override
     public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes,
         MethodInterceptResult result) throws Throwable {
-        allArguments[0] = ServerInterceptors.intercept((ServerServiceDefinition)allArguments[0], new CallServerInterceptor());
+        allArguments[0] = ServerInterceptors.intercept((ServerServiceDefinition)allArguments[0], new CallServerInterceptorEx());
     }
 
     @Override

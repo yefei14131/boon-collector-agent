@@ -37,7 +37,7 @@
     </modules>
     <packaging>pom</packaging>
 
-    <name>apm</name>
+    <name>boon-collector-agent</name>
     <url>https://github.com/apache/skywalking</url>
 
     <scm>

@@ -28,7 +28,6 @@ import org.apache.skywalking.apm.agent.core.logging.api.LogManager;
 import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
 import org.apache.skywalking.apm.util.StringUtil;
 import java.util.HashMap;
-import java.util.Map;
 import static org.apache.skywalking.apm.plugin.grpc.v1.Constants.SERVER;
 import static org.apache.skywalking.apm.plugin.grpc.v1.Constants.STREAM_REQUEST_OBSERVER_ON_NEXT_OPERATION_NAME;
 import static org.apache.skywalking.apm.plugin.grpc.v1.OperationNameFormatUtil.formatOperationName;
@@ -42,7 +41,7 @@ public class CallServerInterceptorEx extends CallServerInterceptor {
 
     @Override
     public ServerCall.Listener interceptCall(ServerCall call, Metadata headers, ServerCallHandler handler) {
-        Map<String, String> headerMap = new HashMap<String, String>();
+        HashMap<String, String> headerMap = new HashMap<String, String>();
         for (String key : headers.keys()) {
             if (!key.endsWith(Metadata.BINARY_HEADER_SUFFIX)) {
                 String value = headers.get(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER));

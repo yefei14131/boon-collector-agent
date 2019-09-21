@@ -37,7 +37,6 @@ import static org.apache.skywalking.apm.plugin.grpc.v1.OperationNameFormatUtil.f
  * @date: 2019/9/20
  */
 public class CallServerInterceptorEx extends CallServerInterceptor {
-    private static final ILog logger = LogManager.getLogger(CallServerInterceptor.class);
 
     @Override
     public ServerCall.Listener interceptCall(ServerCall call, Metadata headers, ServerCallHandler handler) {

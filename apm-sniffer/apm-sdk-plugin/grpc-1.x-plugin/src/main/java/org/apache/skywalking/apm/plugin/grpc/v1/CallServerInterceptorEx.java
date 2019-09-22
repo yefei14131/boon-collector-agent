@@ -33,7 +33,6 @@ import java.util.HashMap;
 
 import static org.apache.skywalking.apm.plugin.grpc.v1.Constants.SERVER;
 import static org.apache.skywalking.apm.plugin.grpc.v1.Constants.STREAM_REQUEST_OBSERVER_ON_NEXT_OPERATION_NAME;
-import static org.apache.skywalking.apm.plugin.grpc.v1.OperationNameFormatUtil.formatOperationName;
 
 /**
  * @author yefei
@@ -74,15 +73,10 @@ public class CallServerInterceptorEx extends CallServerInterceptor {
     }
 
     public class ServerCallEx extends ForwardingServerCall.SimpleForwardingServerCall<Message, Message> {
-
-        private final MethodDescriptor descriptor;
-        private final String operationPrefix;
         private final AbstractSpan entrySpan;
 
         public ServerCallEx(io.grpc.ServerCall delegate, AbstractSpan entrySpan) {
             super(delegate);
-            this.descriptor = delegate.getMethodDescriptor();
-            this.operationPrefix = formatOperationName(descriptor) + SERVER;
             this.entrySpan = entrySpan;
         }
 
@@ -90,6 +84,7 @@ public class CallServerInterceptorEx extends CallServerInterceptor {
         public void close(Status status, Metadata trailers) {
             delegate().close(status, trailers);
             entrySpan.asyncFinish();
+            // close onMessage span
             ContextManager.stopSpan();
         }
     }

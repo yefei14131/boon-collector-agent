@@ -45,6 +45,8 @@ public class Span {
     @Setter private boolean isRoot;
     @Setter private String segmentSpanId;
     @Setter private String segmentParentSpanId;
+    @Setter private String reqData = "";
+    @Setter private String respData = "";
 
     public Span() {
         this.refs = new ArrayList<>();

@@ -35,7 +35,7 @@ import org.apache.skywalking.apm.network.trace.component.Component;
  *
  * @author wusheng
  */
-public class ExitSpan extends StackBasedTracingSpan implements WithPeerInfo {
+public class ExitSpan extends StackExtraTracingSpan implements WithPeerInfo {
 
     public ExitSpan(int spanId, int parentSpanId, String operationName, String peer) {
         super(spanId, parentSpanId, operationName, peer);

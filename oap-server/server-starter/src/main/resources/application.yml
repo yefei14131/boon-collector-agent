@@ -71,7 +71,7 @@ core:
 storage:
   elasticsearch:
     nameSpace: ${SW_NAMESPACE:""}
-    clusterNodes: ${SW_STORAGE_ES_CLUSTER_NODES:localhost:9200}
+    clusterNodes: ${SW_STORAGE_ES_CLUSTER_NODES:172.16.32.38:9200}
     protocol: ${SW_STORAGE_ES_HTTP_PROTOCOL:"http"}
     #trustStorePath: ${SW_SW_STORAGE_ES_SSL_JKS_PATH:"../es_keystore.jks"}
     #trustStorePass: ${SW_SW_STORAGE_ES_SSL_JKS_PASS:""}

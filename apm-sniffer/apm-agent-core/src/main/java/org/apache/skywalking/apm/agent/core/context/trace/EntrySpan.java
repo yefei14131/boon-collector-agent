@@ -33,7 +33,7 @@ import org.apache.skywalking.apm.network.trace.component.Component;
  *
  * @author wusheng
  */
-public class EntrySpan extends StackBasedTracingSpan {
+public class EntrySpan extends StackExtraTracingSpan {
 
     private int currentMaxDepth;
 

@@ -18,6 +18,7 @@
 
 package org.apache.skywalking.apm.plugin.grpc.v1;
 
+import com.google.protobuf.Message;
 import io.grpc.ForwardingServerCall;
 import io.grpc.ForwardingServerCallListener;
 import io.grpc.Metadata;
@@ -78,7 +79,7 @@ public class CallServerInterceptor implements ServerInterceptor {
         }
     }
 
-    public class ServerCallListener extends ForwardingServerCallListener.SimpleForwardingServerCallListener {
+    public class ServerCallListener extends ForwardingServerCallListener.SimpleForwardingServerCallListener<Message> {
 
         private final ContextSnapshot contextSnapshot;
         private final MethodDescriptor.MethodType methodType;
@@ -96,7 +97,7 @@ public class CallServerInterceptor implements ServerInterceptor {
             delegate().onReady();
         }
 
-        @Override public void onMessage(Object message) {
+        @Override public void onMessage(Message message) {
             try {
                 ContextManager.createLocalSpan(operationPrefix + STREAM_REQUEST_OBSERVER_ON_NEXT_OPERATION_NAME);
                 ContextManager.continued(contextSnapshot);

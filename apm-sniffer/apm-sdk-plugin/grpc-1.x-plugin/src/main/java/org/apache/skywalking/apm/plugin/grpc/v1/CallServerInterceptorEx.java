@@ -19,6 +19,7 @@
 package org.apache.skywalking.apm.plugin.grpc.v1;
 
 import com.google.protobuf.Message;
+import com.google.protobuf.util.JsonFormat;
 import io.grpc.*;
 import org.apache.skywalking.apm.agent.core.context.CarrierItem;
 import org.apache.skywalking.apm.agent.core.context.ContextCarrier;
@@ -26,6 +27,9 @@ import org.apache.skywalking.apm.agent.core.context.ContextManager;
 import org.apache.skywalking.apm.agent.core.context.ContextSnapshot;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractSpan;
 import org.apache.skywalking.apm.agent.core.context.trace.SpanLayer;
+import org.apache.skywalking.apm.agent.core.context.trace.StackExtraTracingSpan;
+import org.apache.skywalking.apm.agent.core.logging.api.ILog;
+import org.apache.skywalking.apm.agent.core.logging.api.LogManager;
 import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
 import org.apache.skywalking.apm.util.StringUtil;
 
@@ -39,6 +43,7 @@ import static org.apache.skywalking.apm.plugin.grpc.v1.Constants.STREAM_REQUEST_
  * @date: 2019/9/20
  */
 public class CallServerInterceptorEx extends CallServerInterceptor {
+    private static final ILog logger = LogManager.getLogger(CallServerInterceptorEx.class);
 
     @Override
     public ServerCall.Listener interceptCall(ServerCall call, Metadata headers, ServerCallHandler handler) {
@@ -65,7 +70,7 @@ public class CallServerInterceptorEx extends CallServerInterceptor {
         entrySpan.prepareForAsync();
         ContextSnapshot contextSnapshot = ContextManager.capture();
         try {
-            return new ServerCallListenerEx(handler.startCall(new ServerCallEx(call, entrySpan), headers), call.getMethodDescriptor(), contextSnapshot);
+            return new ServerCallListenerEx(handler.startCall(new ServerCallEx(call, entrySpan), headers), call.getMethodDescriptor(), contextSnapshot, entrySpan);
 
         } finally {
             ContextManager.stopSpan();
@@ -87,28 +92,44 @@ public class CallServerInterceptorEx extends CallServerInterceptor {
             // close onMessage span
             ContextManager.stopSpan();
         }
+
+        @Override
+        public void sendMessage(Message message) {
+            try {
+                ((StackExtraTracingSpan)entrySpan).setRespData(JsonFormat.printer().print(message));
+            } catch (Exception e) {
+                logger.error(e, "grpc server parse resp message error");
+            } finally {
+                delegate().sendMessage(message);
+            }
+        }
     }
 
     public class ServerCallListenerEx extends ServerCallListener {
 
         private final ContextSnapshot contextSnapshot;
+        private final AbstractSpan entrySpan;
         private final String operationPrefix;
 
-        protected ServerCallListenerEx(ServerCall.Listener delegate, MethodDescriptor descriptor, ContextSnapshot contextSnapshot) {
+
+        protected ServerCallListenerEx(ServerCall.Listener delegate, MethodDescriptor descriptor, ContextSnapshot contextSnapshot, AbstractSpan entrySpan) {
             super(delegate, descriptor, contextSnapshot);
             this.contextSnapshot = contextSnapshot;
             this.operationPrefix = OperationNameFormatUtil.formatOperationName(descriptor) + SERVER;
+            this.entrySpan = entrySpan;
         }
 
         @Override
-        public void onMessage(Object message) {
+        public void onMessage(Message message) {
             try {
                 ContextManager.createLocalSpan(operationPrefix + STREAM_REQUEST_OBSERVER_ON_NEXT_OPERATION_NAME)
                         .setLayer(SpanLayer.RPC_FRAMEWORK).setComponent(ComponentsDefine.GRPC);
                 ContextManager.continued(contextSnapshot);
-                delegate().onMessage(message);
+                ((StackExtraTracingSpan)entrySpan).setReqData(JsonFormat.printer().print(message));
             } catch (Throwable t) {
                 ContextManager.activeSpan().errorOccurred().log(t);
+            } finally {
+                delegate().onMessage(message);
             }
         }
     }

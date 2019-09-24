@@ -18,6 +18,7 @@
 
 package org.apache.skywalking.apm.agent.core.context.trace;
 
+import org.apache.skywalking.apm.agent.core.context.util.TagValuePair;
 import org.apache.skywalking.apm.network.language.agent.v2.SpanObjectV2;
 
 /**
@@ -78,5 +79,23 @@ public abstract class StackExtraTracingSpan extends StackBasedTracingSpan {
         }
 
         return spanBuilder;
+    }
+
+    public String getTag(String tagKey) {
+        for (TagValuePair tag : this.tags) {
+            if (tag.getKey().key().equals(tagKey)) {
+                return tag.getValue();
+            }
+        }
+        return null;
+    }
+
+    public String getTag(int tagid) {
+        for (TagValuePair tag : this.tags) {
+            if (tag.getKey().getId() == tagid) {
+                return tag.getValue();
+            }
+        }
+        return null;
     }
 }

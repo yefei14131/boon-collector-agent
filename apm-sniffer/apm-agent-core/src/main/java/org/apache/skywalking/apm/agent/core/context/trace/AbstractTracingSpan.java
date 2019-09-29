@@ -349,4 +349,24 @@ public abstract class AbstractTracingSpan implements AbstractSpan {
         isAsyncStopped = true;
         return this;
     }
+
+
+    public String getTag(int tagid) {
+        for (TagValuePair tag : this.tags) {
+            if (tag.getKey().getId() == tagid) {
+                return tag.getValue();
+            }
+        }
+        return null;
+    }
+
+    public String getTag(String tagKey) {
+        for (TagValuePair tag : this.tags) {
+            if (tag.getKey().key().equals(tagKey)) {
+                return tag.getValue();
+            }
+        }
+        return null;
+    }
+
 }

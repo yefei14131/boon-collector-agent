@@ -23,7 +23,7 @@ import org.apache.skywalking.apm.agent.core.context.tag.AbstractTag;
 import org.apache.skywalking.apm.network.trace.component.Component;
 
 /**
- * The <code>ExitSpan</code> represents a service consumer point, such as Feign, Okhttp client for an Http service.
+ * The <code>ExitSpan</code> represents a service consumer point, such as Feign, Okhttp client for a Http service.
  *
  * It is an exit point or a leaf span(our old name) of trace tree. In a single rpc call, because of a combination of
  * discovery libs, there maybe contain multi-layer exit point:
@@ -35,7 +35,7 @@ import org.apache.skywalking.apm.network.trace.component.Component;
  *
  * @author wusheng
  */
-public class ExitSpan extends StackExtraTracingSpan implements WithPeerInfo {
+public class ExitSpan extends StackBasedTracingSpan implements WithPeerInfo {
 
     public ExitSpan(int spanId, int parentSpanId, String operationName, String peer) {
         super(spanId, parentSpanId, operationName, peer);

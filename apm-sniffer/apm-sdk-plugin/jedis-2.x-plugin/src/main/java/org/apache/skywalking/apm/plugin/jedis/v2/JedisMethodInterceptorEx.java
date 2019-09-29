@@ -19,9 +19,11 @@
 
 package org.apache.skywalking.apm.plugin.jedis.v2;
 
+import org.apache.skywalking.apm.agent.core.constant.TagConstant;
 import org.apache.skywalking.apm.agent.core.context.ContextManager;
 import org.apache.skywalking.apm.agent.core.context.tag.Tags;
-import org.apache.skywalking.apm.agent.core.context.trace.StackExtraTracingSpan;
+import org.apache.skywalking.apm.agent.core.context.trace.AbstractSpan;
+import org.apache.skywalking.apm.agent.core.context.trace.AbstractTracingSpan;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInterceptResult;
 
@@ -33,8 +35,8 @@ public class JedisMethodInterceptorEx extends JedisMethodInterceptor {
     public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, MethodInterceptResult result) throws Throwable {
         super.beforeMethod(objInst, method, allArguments, argumentsTypes, result);
         try {
-            StackExtraTracingSpan span = (StackExtraTracingSpan)ContextManager.activeSpan();
-            span.setReqData(span.getTag(Tags.DB_STATEMENT.getId()));
+            AbstractTracingSpan span = (AbstractTracingSpan) ContextManager.activeSpan();
+            span.tag(TagConstant.REQ_DATA, span.getTag(Tags.DB_STATEMENT.getId()));
         } catch (Exception e) {
 
         }
@@ -43,8 +45,8 @@ public class JedisMethodInterceptorEx extends JedisMethodInterceptor {
     @Override
     public Object afterMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, Object ret) throws Throwable {
         try {
-            StackExtraTracingSpan span = (StackExtraTracingSpan)ContextManager.activeSpan();
-            span.setRespData(ret.toString());
+            AbstractSpan span = ContextManager.activeSpan();
+            span.tag(TagConstant.RESP_DATA, ret.toString());
         } catch (Exception e) {
 
         } finally {

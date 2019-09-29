@@ -21,12 +21,12 @@ package org.apache.skywalking.apm.plugin.grpc.v1;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.grpc.*;
+import org.apache.skywalking.apm.agent.core.constant.TagConstant;
 import org.apache.skywalking.apm.agent.core.context.CarrierItem;
 import org.apache.skywalking.apm.agent.core.context.ContextCarrier;
 import org.apache.skywalking.apm.agent.core.context.ContextManager;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractSpan;
 import org.apache.skywalking.apm.agent.core.context.trace.SpanLayer;
-import org.apache.skywalking.apm.agent.core.context.trace.StackExtraTracingSpan;
 import org.apache.skywalking.apm.agent.core.logging.api.ILog;
 import org.apache.skywalking.apm.agent.core.logging.api.LogManager;
 import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
@@ -94,7 +94,7 @@ public class FutureCallClientInterceptor  extends ForwardingClientCall.SimpleFor
     @Override
     public void sendMessage(Message message) {
         try {
-            ((StackExtraTracingSpan)exitSpan).setReqData(JsonFormat.printer().print(message));
+            exitSpan.tag(TagConstant.REQ_DATA, JsonFormat.printer().print(message));
         } catch (Exception e) {
 
         } finally {
@@ -111,8 +111,7 @@ public class FutureCallClientInterceptor  extends ForwardingClientCall.SimpleFor
         @Override
         public void onMessage(Message message) {
             try {
-                ((StackExtraTracingSpan)exitSpan).setRespData(JsonFormat.printer().print(message));
-
+                exitSpan.tag(TagConstant.RESP_DATA, JsonFormat.printer().print(message));
             } catch (Exception e) {
                 logger.error(e, "client onMessage error: {}", operationPrefix);
 

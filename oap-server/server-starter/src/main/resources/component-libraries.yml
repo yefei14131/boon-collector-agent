@@ -233,7 +233,9 @@ spring-webflux:
 Play:
   id: 68
   languages: Java,Scala
-
+Mybatis:
+  id: 999
+  languages: Java
 
 # .NET/.NET Core components
 # [3000, 4000) for C#/.NET only
@@ -334,3 +336,4 @@ Component-Server-Mappings:
   Npgsql.EntityFrameworkCore.PostgreSQL: PostgreSQL
   transport-client: Elasticsearch
   SolrJ: Solr
+  Mybatis: Mybatis

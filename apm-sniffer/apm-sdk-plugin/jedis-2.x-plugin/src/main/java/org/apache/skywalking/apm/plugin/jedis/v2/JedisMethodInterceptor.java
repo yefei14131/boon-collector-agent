@@ -21,6 +21,7 @@ package org.apache.skywalking.apm.plugin.jedis.v2;
 
 import java.lang.reflect.Method;
 
+import org.apache.skywalking.apm.agent.core.constant.TagConstant;
 import org.apache.skywalking.apm.agent.core.context.tag.Tags;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractSpan;
 import org.apache.skywalking.apm.agent.core.context.trace.SpanLayer;
@@ -43,8 +44,10 @@ public class JedisMethodInterceptor implements InstanceMethodsAroundInterceptor 
 
         if (allArguments.length > 0 && allArguments[0] instanceof String) {
             Tags.DB_STATEMENT.set(span, method.getName() + " " + allArguments[0]);
+            TagConstant.REQ_DATA.set(span, method.getName() + " " + allArguments[0]);
         } else if (allArguments.length > 0 && allArguments[0] instanceof byte[]) {
             Tags.DB_STATEMENT.set(span, method.getName());
+            TagConstant.REQ_DATA.set(span, method.getName());
         }
     }
 

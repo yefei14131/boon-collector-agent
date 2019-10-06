@@ -24,6 +24,9 @@ import org.apache.skywalking.apm.agent.core.context.tag.StringTag;
  * @date: 2019/9/30
  */
 public class TagConstant {
-    public static final StringTag REQ_DATA = new StringTag("req.data");
-    public static final StringTag RESP_DATA = new StringTag("resp.data");
+    public static final StringTag REQ_DATA = new StringTag(99,"req.data", true);
+    public static final StringTag RESP_DATA = new StringTag(98,"resp.data", true);
+    public static final StringTag RESP_CLASS = new StringTag(97,"resp.class", true);
+    public static final StringTag AGENT_DEBUG = new StringTag(96,"agent.debug");
+    public static final StringTag SQL_PARAMETERS = new StringTag(95,"db.sql.parameters", true);
 }

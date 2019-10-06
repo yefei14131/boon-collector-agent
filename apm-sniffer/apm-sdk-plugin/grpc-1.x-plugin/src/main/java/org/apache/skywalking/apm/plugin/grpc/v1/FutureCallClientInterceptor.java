@@ -31,6 +31,8 @@ import org.apache.skywalking.apm.agent.core.logging.api.ILog;
 import org.apache.skywalking.apm.agent.core.logging.api.LogManager;
 import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
 
+import javax.annotation.Nullable;
+
 import static org.apache.skywalking.apm.plugin.grpc.v1.Constants.CLIENT;
 import static org.apache.skywalking.apm.plugin.grpc.v1.OperationNameFormatUtil.formatOperationName;
 
@@ -102,8 +104,12 @@ public class FutureCallClientInterceptor  extends ForwardingClientCall.SimpleFor
         }
     }
 
-    private class ClientCallLister extends ForwardingClientCallListener.SimpleForwardingClientCallListener<Message> {
+    @Override
+    public void cancel(@Nullable String message, @Nullable Throwable cause) {
+        delegate().cancel(message, cause);
+    }
 
+    private class ClientCallLister extends ForwardingClientCallListener.SimpleForwardingClientCallListener<Message> {
         public ClientCallLister(Listener delegate) {
             super(delegate);
         }
@@ -111,10 +117,9 @@ public class FutureCallClientInterceptor  extends ForwardingClientCall.SimpleFor
         @Override
         public void onMessage(Message message) {
             try {
-                exitSpan.tag(TagConstant.RESP_DATA, JsonFormat.printer().print(message));
+                TagConstant.RESP_DATA.set(exitSpan, JsonFormat.printer().print(message));
             } catch (Exception e) {
-                logger.error(e, "client onMessage error: {}", operationPrefix);
-
+                logger.error(e, "grpc client onMessage error: {}", operationPrefix);
             } finally {
                 delegate().onMessage(message);
             }

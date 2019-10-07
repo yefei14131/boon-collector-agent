@@ -48,6 +48,8 @@
         <module>sharding-sphere-4.x-plugin</module>
         <module>xmemcached-2.x-plugin</module>
         <module>grpc-1.x-plugin</module>
+        <module>mybatis-3.x-plugin</module>
+        <module>druid-1.1.x-plugin</module>
         <module>mysql-5.x-plugin</module>
         <module>mysql-6.x-plugin</module>
         <module>mysql-8.x-plugin</module>
@@ -81,6 +83,7 @@
     <url>http://maven.apache.org</url>
 
     <properties>
+        <fastjson.verion>1.2.61</fastjson.verion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sdk.plugin.related.dir />
         <shade.net.bytebuddy.source>net.bytebuddy</shade.net.bytebuddy.source>

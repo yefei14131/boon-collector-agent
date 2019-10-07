@@ -21,19 +21,12 @@ package org.apache.skywalking.apm.plugin.jedis.v2;
 
 import org.apache.skywalking.apm.agent.core.constant.TagConstant;
 import org.apache.skywalking.apm.agent.core.context.ContextManager;
-import org.apache.skywalking.apm.agent.core.context.tag.Tags;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractSpan;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
-import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInterceptResult;
 
 import java.lang.reflect.Method;
 
 public class JedisMethodInterceptorEx extends JedisMethodInterceptor {
-
-    @Override
-    public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, MethodInterceptResult result) throws Throwable {
-        super.beforeMethod(objInst, method, allArguments, argumentsTypes, result);
-    }
 
     @Override
     public Object afterMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, Object ret) throws Throwable {

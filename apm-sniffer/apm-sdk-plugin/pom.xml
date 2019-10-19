@@ -49,7 +49,6 @@
         <module>xmemcached-2.x-plugin</module>
         <module>grpc-1.x-plugin</module>
         <module>mybatis-3.x-plugin</module>
-        <module>druid-1.1.x-plugin</module>
         <module>mysql-5.x-plugin</module>
         <module>mysql-6.x-plugin</module>
         <module>mysql-8.x-plugin</module>

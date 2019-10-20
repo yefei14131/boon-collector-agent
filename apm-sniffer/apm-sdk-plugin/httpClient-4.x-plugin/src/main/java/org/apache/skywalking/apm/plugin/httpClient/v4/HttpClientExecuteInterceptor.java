@@ -18,9 +18,6 @@
 
 package org.apache.skywalking.apm.plugin.httpClient.v4;
 
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -36,8 +33,13 @@ import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceM
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInterceptResult;
 import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
 
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 public class HttpClientExecuteInterceptor implements InstanceMethodsAroundInterceptor {
 
+    private String requestURI = "";
     @Override public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments,
                                        Class<?>[] argumentsTypes, MethodInterceptResult result) throws Throwable {
         if (allArguments[0] == null || allArguments[1] == null) {
@@ -53,6 +55,12 @@ public class HttpClientExecuteInterceptor implements InstanceMethodsAroundInterc
         String uri = httpRequest.getRequestLine().getUri();
         String requestURI = getRequestURI(uri);
         String operationName = requestURI;
+
+        // ignore hualala etcd
+        this.requestURI = requestURI;
+        if (isHualalaEtcd(requestURI)) {
+            return;
+        }
         AbstractSpan span = ContextManager.createExitSpan(operationName, contextCarrier, remotePeer);
 
         span.setComponent(ComponentsDefine.HTTPCLIENT);
@@ -72,7 +80,10 @@ public class HttpClientExecuteInterceptor implements InstanceMethodsAroundInterc
         if (allArguments[0] == null || allArguments[1] == null) {
             return ret;
         }
-
+        // ignore hualala etcd
+        if (isHualalaEtcd(requestURI)) {
+            return ret;
+        }
         if (ret != null) {
             HttpResponse response = (HttpResponse)ret;
             StatusLine responseStatusLine = response.getStatusLine();
@@ -92,6 +103,10 @@ public class HttpClientExecuteInterceptor implements InstanceMethodsAroundInterc
 
     @Override public void handleMethodException(EnhancedInstance objInst, Method method, Object[] allArguments,
                                                 Class<?>[] argumentsTypes, Throwable t) {
+        // ignore hualala etcd
+        if (isHualalaEtcd(requestURI)) {
+            return;
+        }
         AbstractSpan activeSpan = ContextManager.activeSpan();
         activeSpan.errorOccurred();
         activeSpan.log(t);
@@ -129,5 +144,9 @@ public class HttpClientExecuteInterceptor implements InstanceMethodsAroundInterc
     private int port(HttpHost httpHost) {
         int port = httpHost.getPort();
         return port > 0 ? port : "https".equals(httpHost.getSchemeName().toLowerCase()) ? 443 : 80;
+    }
+
+    private boolean isHualalaEtcd(String requestURI) {
+        return requestURI.matches(".*?/namespaces/\\w+/endpoints/.*");
     }
 }

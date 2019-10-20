@@ -18,6 +18,8 @@
 
 package org.apache.skywalking.apm.plugin.druid.interceptor;
 
+import org.apache.skywalking.apm.agent.core.logging.api.ILog;
+import org.apache.skywalking.apm.agent.core.logging.api.LogManager;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceConstructorInterceptor;
 
@@ -28,12 +30,15 @@ import java.sql.Statement;
  * @date: 2019/10/3
  */
 public class DruidPooledStatementConstructorInterceptor implements InstanceConstructorInterceptor {
+    private static final ILog logger = LogManager.getLogger(DruidPooledStatementConstructorInterceptor.class);
 
     @Override
     public void onConstruct(EnhancedInstance objInst, Object[] allArguments) {
         Statement statement = (Statement)allArguments[1];
         if (statement instanceof EnhancedInstance) {
             objInst.setSkyWalkingDynamicField(((EnhancedInstance) statement).getSkyWalkingDynamicField());
+        } else {
+            logger.info("druid pooled statement constructor, parameter statement is not instanceof EnhancedInstance, statement type : {}", statement.getClass().getName());
         }
     }
 }

@@ -22,9 +22,12 @@ import org.apache.skywalking.apm.agent.core.context.ContextManager;
 import org.apache.skywalking.apm.agent.core.context.tag.Tags;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractSpan;
 import org.apache.skywalking.apm.agent.core.context.trace.SpanLayer;
+import org.apache.skywalking.apm.agent.core.logging.api.ILog;
+import org.apache.skywalking.apm.agent.core.logging.api.LogManager;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceMethodsAroundInterceptor;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInterceptResult;
+import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
 import org.apache.skywalking.apm.plugin.jdbc.define.StatementEnhanceInfos;
 import org.apache.skywalking.apm.plugin.jdbc.trace.ConnectionInfo;
 
@@ -32,6 +35,8 @@ import java.lang.reflect.Method;
 
 
 public class StatementExecuteMethodsInterceptor implements InstanceMethodsAroundInterceptor {
+    private static final ILog logger = LogManager.getLogger(StatementExecuteMethodsInterceptor.class);
+
     @Override
     public final void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments,
         Class<?>[] argumentsTypes,
@@ -46,8 +51,22 @@ public class StatementExecuteMethodsInterceptor implements InstanceMethodsAround
          * @see JDBCDriverInterceptor#afterMethod(EnhancedInstance, Method, Object[], Class[], Object)
          */
         if (connectInfo != null) {
+            AbstractSpan activeSpan = null;
+            try {
+                activeSpan = ContextManager.activeSpan();
+            } catch (Exception e) {
 
-            AbstractSpan span = ContextManager.createExitSpan(buildOperationName(connectInfo, method.getName(), cacheObject.getStatementName()), connectInfo.getDatabasePeer());
+            }
+            AbstractSpan span;
+            if (activeSpan != null && activeSpan.isExit() && ComponentsDefine.MYBATIS.getId() == activeSpan.getComponentId()) {
+                span = activeSpan;
+                span.setOperationName(buildOperationName(connectInfo, method.getName(), cacheObject.getStatementName()));
+                span.setPeer(connectInfo.getDatabasePeer());
+                connectInfo.setComponent(ComponentsDefine.MYBATIS);
+            } else {
+                span = ContextManager.createExitSpan(buildOperationName(connectInfo, method.getName(), cacheObject.getStatementName()), connectInfo.getDatabasePeer());
+                span.setComponent(connectInfo.getComponent());
+            }
             Tags.DB_TYPE.set(span, "sql");
             Tags.DB_INSTANCE.set(span, connectInfo.getDatabaseName());
 
@@ -61,7 +80,7 @@ public class StatementExecuteMethodsInterceptor implements InstanceMethodsAround
             }
 
             Tags.DB_STATEMENT.set(span, sql);
-            span.setComponent(connectInfo.getComponent());
+//            span.setComponent(connectInfo.getComponent());
 
             SpanLayer.asDB(span);
         }
@@ -72,7 +91,7 @@ public class StatementExecuteMethodsInterceptor implements InstanceMethodsAround
         Class<?>[] argumentsTypes,
         Object ret) throws Throwable {
         StatementEnhanceInfos cacheObject = (StatementEnhanceInfos)objInst.getSkyWalkingDynamicField();
-        if (cacheObject.getConnectionInfo() != null) {
+        if (cacheObject.getConnectionInfo() != null && cacheObject.getConnectionInfo().getComponent().equals(ComponentsDefine.MYSQL_JDBC_DRIVER)) {
             ContextManager.stopSpan();
         }
         return ret;

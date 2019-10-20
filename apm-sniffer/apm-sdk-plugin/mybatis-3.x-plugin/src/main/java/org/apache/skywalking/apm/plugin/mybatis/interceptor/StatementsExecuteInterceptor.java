@@ -19,7 +19,6 @@
 package org.apache.skywalking.apm.plugin.mybatis.interceptor;
 
 import com.google.gson.Gson;
-import org.apache.skywalking.apm.agent.core.conf.Config;
 import org.apache.skywalking.apm.agent.core.constant.TagConstant;
 import org.apache.skywalking.apm.agent.core.context.ContextManager;
 import org.apache.skywalking.apm.agent.core.context.tag.Tags;
@@ -32,7 +31,6 @@ import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceM
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInterceptResult;
 import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
 import org.apache.skywalking.apm.plugin.jdbc.define.StatementEnhanceInfos;
-import org.apache.skywalking.apm.plugin.jdbc.trace.ConnectionInfo;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -48,34 +46,33 @@ public class StatementsExecuteInterceptor implements InstanceMethodsAroundInterc
     public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, MethodInterceptResult result) {
         try {
             StatementEnhanceInfos cacheObject = (StatementEnhanceInfos)objInst.getSkyWalkingDynamicField();
-            if (cacheObject != null) {
-                ConnectionInfo connectInfo = cacheObject.getConnectionInfo();
-                AbstractSpan span = ContextManager.createExitSpan(buildOpeationName(connectInfo.getDBType(), objInst.getClass().getSimpleName(), method.getName()), connectInfo.getDatabasePeer());
-                SpanLayer.asDB(span);
-                Tags.DB_TYPE.set(span, "sql");
-                Tags.DB_INSTANCE.set(span, connectInfo.getDatabaseName());
-                Tags.DB_STATEMENT.set(span, cacheObject.getSql());
-                span.setComponent(ComponentsDefine.MYBATIS);
-                TagConstant.REQ_DATA.set(span, cacheObject.getSql());
 
-                if (Config.Plugin.MySQL.TRACE_SQL_PARAMETERS) {
-                    final Object[] parameters = cacheObject.getParameters();
-                    if (parameters != null && parameters.length > 0) {
-                        int maxIndex = cacheObject.getMaxIndex();
-                        String parameterString = buildParameterString(parameters, maxIndex);
-                        int sqlParametersMaxLength = Config.Plugin.MySQL.SQL_PARAMETERS_MAX_LENGTH;
-                        if (sqlParametersMaxLength > 0 && parameterString.length() > sqlParametersMaxLength) {
-                            parameterString = parameterString.substring(0, sqlParametersMaxLength) + "...";
-                        }
-                        TagConstant.SQL_PARAMETERS.set(span, parameterString);
-                    }
-                }
-            } else {
-                logger.debug("mybatis statement execute, cacheObject is null");
-            }
+            logger.info("mybatis statement update/query, cacheObject is null : {} ", cacheObject == null);
+
+//            ConnectionInfo connectInfo = cacheObject.getConnectionInfo();
+            AbstractSpan span = ContextManager.createExitSpan(buildOpeationName("?componentName?", objInst.getClass().getSimpleName(), method.getName()), "?peer?");
+            SpanLayer.asDB(span);
+            Tags.DB_TYPE.set(span, "sql");
+//            Tags.DB_INSTANCE.set(span, connectInfo.getDatabaseName());
+//            Tags.DB_STATEMENT.set(span, cacheObject.getSql());
+            span.setComponent(ComponentsDefine.MYBATIS);
+//            TagConstant.REQ_DATA.set(span, cacheObject.getSql());
+
+//            if (Config.Plugin.MySQL.TRACE_SQL_PARAMETERS) {
+//                final Object[] parameters = cacheObject.getParameters();
+//                if (parameters != null && parameters.length > 0) {
+//                    int maxIndex = cacheObject.getMaxIndex();
+//                    String parameterString = buildParameterString(parameters, maxIndex);
+//                    int sqlParametersMaxLength = Config.Plugin.MySQL.SQL_PARAMETERS_MAX_LENGTH;
+//                    if (sqlParametersMaxLength > 0 && parameterString.length() > sqlParametersMaxLength) {
+//                        parameterString = parameterString.substring(0, sqlParametersMaxLength) + "...";
+//                    }
+//                    TagConstant.SQL_PARAMETERS.set(span, parameterString);
+//                }
+//            }
 
         } catch (Exception e) {
-            logger.error(e, "mybatis routing statement before error");
+            logger.error(e, "mybatis statement update/query before error");
         }
     }
 
@@ -85,10 +82,9 @@ public class StatementsExecuteInterceptor implements InstanceMethodsAroundInterc
 
     @Override
     public Object afterMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, Object ret) throws Throwable {
-        AbstractSpan span = ContextManager.activeSpan();
         try {
-            if (span != null) {
-
+            AbstractSpan span = ContextManager.activeSpan();
+            if (span != null && span.isExit() && ComponentsDefine.MYBATIS.getId() == span.getComponentId()) {
                 if (ret instanceof List && ((List) ret).size() > 0) {
                     TagConstant.RESP_DATA.set(span, new Gson().toJson(ret));
                     TagConstant.RESP_CLASS.set(span, ((List) ret).get(0).getClass().getName());
@@ -96,36 +92,18 @@ public class StatementsExecuteInterceptor implements InstanceMethodsAroundInterc
                     TagConstant.RESP_DATA.set(span, ret.toString());
                     TagConstant.RESP_CLASS.set(span, ret.getClass().getName());
                 }
-
+                ContextManager.stopSpan();
             }
-
         } catch (Exception e) {
-            logger.error(e,"mybatis statement execute error");
+            logger.error(e,"mybatis statement update/query after error");
+
         } finally {
-            ContextManager.stopSpan();
             return ret;
         }
-
     }
 
     @Override
     public void handleMethodException(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, Throwable t) {
 
-    }
-
-    private String buildParameterString(Object[] parameters, int maxIndex) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("[");
-        boolean first = true;
-        for (int i = 0; i < maxIndex; i++) {
-            Object parameter = parameters[i];
-            if (!first) {
-                builder.append(",");
-            }
-            builder.append(parameter);
-            first = false;
-        }
-        builder.append("]");
-        return builder.toString();
     }
 }

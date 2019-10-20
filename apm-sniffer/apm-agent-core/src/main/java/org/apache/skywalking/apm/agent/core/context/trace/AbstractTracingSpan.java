@@ -18,14 +18,22 @@
 
 package org.apache.skywalking.apm.agent.core.context.trace;
 
-import java.util.*;
-import org.apache.skywalking.apm.agent.core.context.*;
-import org.apache.skywalking.apm.agent.core.context.tag.*;
-import org.apache.skywalking.apm.agent.core.context.util.*;
+import org.apache.skywalking.apm.agent.core.context.AbstractTracerContext;
+import org.apache.skywalking.apm.agent.core.context.ContextManager;
+import org.apache.skywalking.apm.agent.core.context.tag.AbstractTag;
+import org.apache.skywalking.apm.agent.core.context.tag.StringTag;
+import org.apache.skywalking.apm.agent.core.context.util.KeyValuePair;
+import org.apache.skywalking.apm.agent.core.context.util.TagValuePair;
+import org.apache.skywalking.apm.agent.core.context.util.ThrowableTransformer;
 import org.apache.skywalking.apm.agent.core.dictionary.DictionaryUtil;
 import org.apache.skywalking.apm.network.language.agent.SpanType;
 import org.apache.skywalking.apm.network.language.agent.v2.SpanObjectV2;
 import org.apache.skywalking.apm.network.trace.component.Component;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The <code>AbstractTracingSpan</code> represents a group of {@link AbstractSpan} implementations, which belongs a real
@@ -373,4 +381,9 @@ public abstract class AbstractTracingSpan implements AbstractSpan {
         return null;
     }
 
+
+    @Override
+    public int getComponentId() {
+        return this.componentId;
+    }
 }

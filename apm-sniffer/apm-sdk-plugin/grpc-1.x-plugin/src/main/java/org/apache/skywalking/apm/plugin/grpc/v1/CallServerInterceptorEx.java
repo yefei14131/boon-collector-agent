@@ -87,10 +87,15 @@ public class CallServerInterceptorEx extends CallServerInterceptor {
 
         @Override
         public void close(Status status, Metadata trailers) {
-            delegate().close(status, trailers);
-            entrySpan.asyncFinish();
-            // close onMessage span
-            ContextManager.stopSpan();
+            try {
+                // close onMessage span
+                entrySpan.asyncFinish();
+                ContextManager.stopSpan();
+            } catch (Exception e) {
+
+            } finally {
+                delegate().close(status, trailers);
+            }
         }
 
         @Override

@@ -18,6 +18,8 @@
 
 package org.apache.skywalking.apm.plugin.druid.interceptor;
 
+import org.apache.skywalking.apm.agent.core.logging.api.ILog;
+import org.apache.skywalking.apm.agent.core.logging.api.LogManager;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceConstructorInterceptor;
 
@@ -26,12 +28,15 @@ import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceC
  * @date: 2019/10/3
  */
 public class PreparedStatementProxyImplConstructorInterceptor implements InstanceConstructorInterceptor {
+    private static final ILog logger = LogManager.getLogger(PreparedStatementProxyImplConstructorInterceptor.class);
 
     @Override
     public void onConstruct(EnhancedInstance objInst, Object[] allArguments) {
         Object statement = allArguments[1];
         if (statement instanceof EnhancedInstance) {
             objInst.setSkyWalkingDynamicField(((EnhancedInstance) statement).getSkyWalkingDynamicField());
+        } else {
+            logger.info("{} constructor, parameter statement is not instanceof EnhancedInstance, statement type : {}", objInst.getClass().getSimpleName(), statement.getClass().getName());
         }
     }
 }

@@ -41,7 +41,9 @@ public class PreparedStatementProxyImplInstrumentation extends ClassEnhancePlugi
 
     @Override
     protected ClassMatch enhanceClass() {
-        return MultiClassNameMatch.byMultiClassMatch("com.alibaba.druid.proxy.jdbc.PreparedStatementProxyImpl");
+        return MultiClassNameMatch.byMultiClassMatch("com.alibaba.druid.proxy.jdbc.PreparedStatementProxyImpl",
+            "com.alibaba.druid.proxy.jdbc.StatementProxyImpl",
+            "com.alibaba.druid.proxy.jdbc.CallableStatementProxyImpl");
     }
 
     @Override

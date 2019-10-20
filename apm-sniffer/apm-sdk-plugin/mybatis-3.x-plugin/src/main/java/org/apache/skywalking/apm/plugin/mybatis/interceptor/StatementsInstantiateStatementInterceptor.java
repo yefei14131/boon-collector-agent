@@ -42,17 +42,16 @@ public class StatementsInstantiateStatementInterceptor implements InstanceMethod
     public Object afterMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, Object ret) throws Throwable {
         try {
             if (ret != null && ret instanceof EnhancedInstance) {
-                try {
-                    Object skyWalkingDynamicField = ((EnhancedInstance) ret).getSkyWalkingDynamicField();
-                    if (skyWalkingDynamicField != null) {
-                        objInst.setSkyWalkingDynamicField(skyWalkingDynamicField);
-                    } else {
-                        logger.debug("mybatis instantiate statement, ret.getSkyWalkingDynamicField is null");
-                    }
-
-                } catch (Exception e) {
-                    logger.error(e,"get statementEnhanceInfos error");
+                Object skyWalkingDynamicField = ((EnhancedInstance) ret).getSkyWalkingDynamicField();
+                if (skyWalkingDynamicField != null) {
+                    objInst.setSkyWalkingDynamicField(skyWalkingDynamicField);
+                } else {
+                    logger.debug("mybatis instantiate statement, ret.getSkyWalkingDynamicField is null");
                 }
+
+            } else {
+                Object connection = allArguments[0];
+                logger.info("mybatis {}  instantiate statemen, statement is not instanceof EnhancedInstance, statement type : {}, connection type: {}", objInst.getClass().getSimpleName(), ret.getClass().getName(), connection.getClass().getName());
             }
         } catch (Exception e) {
             logger.error(e, "mybatis instantiate statement before error");

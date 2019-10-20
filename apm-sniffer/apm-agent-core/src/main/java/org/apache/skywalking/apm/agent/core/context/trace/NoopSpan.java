@@ -116,6 +116,11 @@ public class NoopSpan implements AbstractSpan {
         return this;
     }
 
+    @Override
+    public int getComponentId() {
+        return 0;
+    }
+
     @Override public AbstractSpan prepareForAsync() {
         return this;
     }

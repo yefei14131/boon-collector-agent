@@ -41,7 +41,7 @@ public class ConnectionInfo {
     /**
      * Component
      */
-    private final OfficialComponent component;
+    private OfficialComponent component;
 
     public ConnectionInfo(OfficialComponent component, String dbType, String host, int port, String databaseName) {
         this.dbType = dbType;
@@ -75,5 +75,9 @@ public class ConnectionInfo {
 
     public void setDatabaseName(String dataBaseName) {
         this.databaseName = dataBaseName;
+    }
+
+    public void setComponent(OfficialComponent component) {
+        this.component = component;
     }
 }
